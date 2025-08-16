@@ -1,0 +1,7 @@
+.backaground_image{
+    background: url("C:/Users/ujjwa/Desktop/TravelByMe/Travel-Yatra/public/images/bg_jmg1.jpg") no-repeat;
+    background-size: cover;
+    /* background-position: 0px 0px; */
+    filter: brightness(0.7);
+    height: 340px;
+}
