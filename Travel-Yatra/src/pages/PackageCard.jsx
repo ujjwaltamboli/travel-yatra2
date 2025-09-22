@@ -7,7 +7,6 @@ import { FaClock } from "react-icons/fa";
 
 const PackageCard = ({Data}) => {
   const navigate= useNavigate();
-  console.log(Data.packageImages[0])
   return (
     <div className="w-full bg-white border flex flex-col items-center p-3 rounded shadow-md overflow-hidden">
         <img

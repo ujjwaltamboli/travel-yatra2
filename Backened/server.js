@@ -8,6 +8,7 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import { auth, isAdmin } from "./middlewares/verify.js";
 import { ObjectId } from 'mongodb'; // ESM
+import Booking from "./models/Booking.model.js";
 
 const app = express();
 app.use(cors({
@@ -56,6 +57,27 @@ app.get("/api/package", async (req, res) => {
   }
 });
 
+app.get("/api/delete",async(req,res)=>{
+  const {id}=req.query;
+  await connectDB();
+  await Package.deleteOne({_id:id});
+  res.json({ success: true, message: "Package deleted successfully" });
+})
+
+app.get("/api/pay", async (req, res) => {
+  console.log("Hello");
+  await connectDB();
+  const { id,uid } = req.query;
+  let packageData = await Booking.updateOne(
+    { packageId: id , // filter by id
+     userId: uid},
+    { $inc: { quantity: 1 } },
+    {upsert: true}  // increment quantity by 1
+  );
+  console.log(packageData);
+  return res.json(packageData);
+})
+
 // ✅ AUTH ROUTES
 app.use("/api/auth", authRouter);
 
@@ -69,10 +91,43 @@ app.post("/admin", async (req, res) => {
 });
 
 app.get("/admin", auth, isAdmin, async (req, res) => {
-  res.json({ success: true, message: "Access granted " });
+  res.json({ success: true, message: "Access granted ", id: `${req.user.id}` });
 });
+
+// 🔒 UPDATE PACKAGE (Admin Only)
+app.put("/admin", async (req, res) => {
+  try {
+    await connectDB();
+    const { id } = req.query;   // package id from URL
+    const updates = req.body;    // updated data from frontend
+
+    const updatedPackage = await Package.findByIdAndUpdate(
+      id,
+      updates,
+      { new: true, runValidators: true } // returns updated doc & validates schema
+    );
+
+    if (!updatedPackage) {
+      return res.status(404).json({ success: false, message: "Package not found" });
+    }
+
+    res.json({
+      success: true,
+      message: "Package updated successfully",
+      data: updatedPackage,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Error updating package" });
+  }
+});
+
+
+app.get("/admin2",auth,async(req,res)=>{
+  res.json({success:true,message:"Access Granted", id:`${req.user.id}`, role:`${req.user.role}`});
+})
 
 const PORT = 3000;
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port http://10.96.65.10:${PORT}`);
+  console.log(`Server running on port http://10.43.233.10:${PORT}`);
 });

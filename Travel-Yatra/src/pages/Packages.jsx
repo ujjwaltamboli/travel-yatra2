@@ -1,12 +1,15 @@
 import React from 'react'
 import { useState, useEffect,useRef } from 'react'
 import { useLocation } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 import PackageCard from './PackageCard';
+import PackageCard2 from './PackageCard2';
 
 
 const Packages = () => {
   const [packages, setPackages] = useState([]);
   const location = useLocation();
+  const navigate=useNavigate();
   const params = new URLSearchParams(location.search);
   const[value, setValue]=useState([]);
   const ref1 = useRef(null)
@@ -15,6 +18,37 @@ const Packages = () => {
   const sort = params.get("sort"); // "abc"
   const offr=params.get("offer");
   const [offer, setOffer] = useState(offr=="true");
+
+  
+  const [role, setrole] = useState(0)
+  useEffect(() => {
+    const checkRole = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${import.meta.env.VITE_URL}admin2`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          credentials: "include",
+        });
+
+        const data = await res.json();
+        setrole(data.role);
+        console.log(data);
+        return data.role;
+      } catch (err) {
+        console.error("Admin access check failed:", err);
+      }
+    };
+
+    checkRole();
+  }, []);
+  const onDelete=async(Data)=>{
+    setPackages(packages.filter((pkg)=>pkg._id!=Data._id));
+    await fetch(`${import.meta.env.VITE_URL}api/delete?id=${Data._id}`);
+  }
   const getPackages=async()=>{
     const res=await fetch(`${import.meta.env.VITE_URL}api/package`)
     let data=await res.json();
@@ -22,7 +56,6 @@ const Packages = () => {
     setValue(data);
     return data;
   }
-  console.log(sort);
   useEffect(() => {
     getPackages()
     if (sort=="packageRating"){
@@ -156,10 +189,19 @@ const Packages = () => {
         <h1 className='text-xl border w-[100%] px-5 py-3 pt-8'> Package Results: </h1>
         <div className='grid grid-cols-4'>
           {packages.map((packageData,i)=>
-            <PackageCard Data={packageData} id={i}/>
+              {if (role==1) return <PackageCard2 key={i} Data={packageData} onDelete={onDelete}/>;
+               else return <PackageCard key={i} Data={packageData} />;
+              }
           )
           }
-
+          {role == 1 && (
+            <div
+              className="flex items-center h-[220px] justify-center border-2 border-dashed border-gray-400 rounded-2xl cursor-pointer hover:bg-gray-100"
+              onClick={() => navigate("/admin")}
+            >
+              <span className="text-4xl font-bold text-gray-600">+</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

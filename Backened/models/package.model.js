@@ -62,6 +62,7 @@ const packageSchema = new mongoose.Schema(
       type: Array,
       required: true,
     },
+    packageTotalQuantity: { type: Number},
   },
   { timestamps: true }
 );

@@ -26,17 +26,16 @@ export const auth = (req, res, next) => {
   }
 };
 
-
 export const isAdmin = (req, res, next) => {
   if (req.user.role !== 1) {
-    return res.status(403).json({ success: false, message: "This route is reserved for Admin" });
+    return res.status(403).json({ success: false, id: req.user.id,message: "This route is reserved for Admin" });
   }
   next();
 };
 
 export const isUser = (req, res, next) => {
   if (req.user.role !== 0) {
-    return res.status(403).json({ success: false, message: "This route is reserved for Students" });
+    return res.status(403).json({ success: false, id: req.user.id,message: "This route is reserved for Students" });
   }
   next();
 };

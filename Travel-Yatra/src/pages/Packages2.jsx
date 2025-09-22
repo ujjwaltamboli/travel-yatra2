@@ -14,6 +14,26 @@ const Packages2 = () => {
     const data = await res.json()
     setd(data);
   }
+  const handleSubmit=async()=>{
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${import.meta.env.VITE_URL}admin2`, {
+      method: "GET", // or POST, PUT, etc.
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      credentials: "include", // use this if you're using cookies
+    });
+    const data = await res.json();
+    console.log(data);
+    if (data.success){
+      await fetch(`${import.meta.env.VITE_URL}api/pay?id=${id}&&uid=${data.id}`);
+      alert("Congratulations! Your payment is successful");
+    }
+    else{
+      alert("Please login first");
+    }
+  }
   useEffect(() => {
     getPackage(id);
   }, [id])
@@ -35,7 +55,7 @@ const Packages2 = () => {
       <p>{d.packageDestination}</p>
       <p>{`${d.packageDays} Days- ${d.packageNights} Nights`}</p>
       <p className=''>Immerse yourself in the heart of Amazon Rainforest, discovering exotic wildlife and vibrant ecosystem</p>
-      <button className='w-52 rounded-md bg-green-700 h-10 text-white' >Book</button>
+      <button className='w-52 rounded-md bg-green-700 h-10 text-white' onClick={()=>{handleSubmit()}} >Book</button>
 
       <h2 className='text-2xl'>Accomodation:</h2>
       <p>{d.packageAccommodation}</p>

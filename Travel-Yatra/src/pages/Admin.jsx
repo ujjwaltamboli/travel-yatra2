@@ -1,38 +1,12 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function PackageForm() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const packageId = params.get("id"); // check if editing
 
-  useEffect(() => {
-    const checkAdminAccess = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        console.log(token);
-        const res = await fetch(`${import.meta.env.VITE_URL}admin`, {
-          method: "GET", // or POST, PUT, etc.
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          },
-          credentials: "include", // use this if you're using cookies
-        });
-
-        const data = await res.json();
-
-        if (data.success !== true) {
-          alert("You donot have access to this page. Click ok to go to signup");
-          navigate("/signup");
-        }
-      } catch (err) {
-        console.error("Admin access check failed:", err);
-        navigate("/about");
-      }
-    };
-
-    checkAdminAccess();
-  }, [navigate]);
-  console.log("Hello World");
   const [formData, setFormData] = useState({
     packageName: "",
     packageDescription: "",
@@ -50,6 +24,47 @@ export default function PackageForm() {
     packageTotalRatings: 0,
     packageImages: ["", "", ""],
   });
+
+  // ✅ Admin access check (unchanged)
+  useEffect(() => {
+    const checkAdminAccess = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${import.meta.env.VITE_URL}admin`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          credentials: "include",
+        });
+
+        const data = await res.json();
+
+        if (data.success !== true) {
+          alert("You do not have access to this page. Click ok to go to signup");
+          navigate("/signup");
+        }
+      } catch (err) {
+        console.error("Admin access check failed:", err);
+        navigate("/about");
+      }
+    };
+
+    checkAdminAccess();
+  }, [navigate]);
+
+  // ✅ Load existing package if editing
+  useEffect(() => {
+    const fetchPackage = async () => {
+      if (packageId) {
+        const res = await fetch(`${import.meta.env.VITE_URL}api/package?id=${packageId}`);
+        const data = await res.json();
+        setFormData(data); // prefill with package data
+      }
+    };
+    fetchPackage();
+  }, [packageId]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -75,17 +90,27 @@ export default function PackageForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Form Data:", formData);
-
-    await fetch(`${import.meta.env.VITE_URL}admin`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
+    console.log(packageId);
+    const method = packageId ? "PUT" : "POST";
+    const url = packageId
+      ? `${import.meta.env.VITE_URL}admin?id=${packageId}`
+      : `${import.meta.env.VITE_URL}admin`;
+    console.log(url);
+    let res= await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
     });
+    console.log(res.success);
+    navigate ("/"); // redirect after save
   };
 
   return (
     <div className="max-w-lg mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Add New Package</h1>
+      <h1 className="text-2xl font-bold mb-4">
+        {packageId ? "Edit Package" : "Add New Package"}
+      </h1>
+
       <form onSubmit={handleSubmit} className="grid gap-4">
         <input
           type="text"
@@ -215,7 +240,7 @@ export default function PackageForm() {
         ))}
 
         <button type="submit" className="bg-blue-500 text-white py-2 px-4 rounded">
-          Submit
+          {packageId ? "Update Package" : "Submit"}
         </button>
       </form>
     </div>

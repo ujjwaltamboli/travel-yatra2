@@ -6,6 +6,7 @@ import { FaCalendar, FaSearch, FaStar } from "react-icons/fa";
 import { FaRankingStar } from "react-icons/fa6";
 import { LuBadgePercent } from "react-icons/lu";
 import PackageCard from "./PackageCard";
+import PackageCard2 from "./PackageCard2";
 // import PackageCard from "./PackageCard";
 // import { useNavigate } from "react-router";
 
@@ -16,9 +17,17 @@ const Home = () => {
   const [offerPackages, setOfferPackages] = useState([]);
   const [loading, setloading] = useState(false);
   const navigate = useNavigate();
+  const role=1;
+
+  const onDelete=async(Data)=>{
+    setTopPackages(topPackages.filter((pkg)=>pkg._id!=Data._id));
+    setLatestPackages(latestPackages.filter((pkg)=>pkg._id!=Data._id));
+    setOfferPackages(offerPackages.filter((pkg)=>pkg._id!=Data._id));
+    await fetch(`${import.meta.env.VITE_URL}api/delete?id=${Data._id}`);
+  }
 
   const getTopPackages = async () => {
-    const res = await fetch(`${import.meta.env.VITE_URL}api/package?Description=topPackages`)
+    const res = await fetch(`${import.meta.env.VITE_URL}api/package?Description=topPackages`, {cache:"no-store"})
     const data = await res.json()
     console.log(data);
     setTopPackages(data);
@@ -26,7 +35,7 @@ const Home = () => {
   }
 
   const getLatestPackages = async () => {
-    const res = await fetch(`${import.meta.env.VITE_URL}api/package?sort=createdAt&&limit=5`)
+    const res = await fetch(`${import.meta.env.VITE_URL}api/package?sort=createdAt&&limit=5`, {cache:"no-store"})
     const data = await res.json()
     setLatestPackages(data)
     return data;
@@ -34,7 +43,7 @@ const Home = () => {
 
   const getOfferPackages = async () => {
     const res = await fetch(
-      `${import.meta.env.VITE_URL}api/package?sort=createdAt&&offer=true&&limit=5`
+      `${import.meta.env.VITE_URL}api/package?sort=createdAt&&offer=true&&limit=5`,{cache:"no-store"}
     );
     const data = await res.json();
     setOfferPackages(data);
@@ -104,7 +113,9 @@ const Home = () => {
           <h2 className="text-2xl font-bold" >Top Packages</h2>
           <div className="grid 2xl:grid-cols-5 xlplus:grid-cols-4 lg:grid-cols-3 sm:grid-cols-2 gap-2 my-3">
             {topPackages.map((packageData, i) => {
-              return <PackageCard key={i} Data={packageData} />;
+              // if (role==0) 
+                return <PackageCard key={i} Data={packageData} />;
+              // else return <PackageCard2 key={i} Data={packageData} onDelete={onDelete}/>;
             })}
           </div>
         </>
@@ -115,7 +126,9 @@ const Home = () => {
           <h3 className="text-2xl font-bold">Latest Packages</h3>
           <div className="grid 2xl:grid-cols-5 xlplus:grid-cols-4 lg:grid-cols-3 sm:grid-cols-2 gap-2 my-3">
             {latestPackages.map((packageData, i) => {
-              return <PackageCard key={i} Data={packageData} />;
+              // if (role==0) 
+                return <PackageCard key={i} Data={packageData} />;
+              // else return <PackageCard2 key={i} Data={packageData} onDelete={onDelete}/>;
             })}
           </div>
         </>
@@ -127,7 +140,9 @@ const Home = () => {
           <h3 className="text-2xl font-bold">Best Packages</h3>
           <div className="grid 2xl:grid-cols-5 xlplus:grid-cols-4 lg:grid-cols-3 sm:grid-cols-2 gap-2 my-3">
             {offerPackages.map((packageData, i) => {
-              return <PackageCard key={i} Data={packageData} />;
+              // if (role==0) 
+                return <PackageCard key={i} Data={packageData} />;
+              // else return <PackageCard2 key={i} Data={packageData} onDelete={onDelete}/>;
             })}
           </div>
         </>
